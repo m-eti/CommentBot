@@ -38,18 +38,12 @@ jobs:
       run: |
         pytest
     - name: Deploy to server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SSH_IP: ${{ secrets.SSH_IP }}
-        SSH_USER: ${{ secrets.SSH_USER }}
-        SSH_PORT: ${{ secrets.SSH_PORT }}
-        SERVER_APP_PATH: ${{ secrets.SERVER_APP_PATH }}
       run: |
-        echo "$SSH_PRIVATE_KEY" > private_key
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
         chmod 600 private_key
-        ssh -o StrictHostKeyChecking=no -i private_key $SSH_USER@$SSH_IP -p $SSH_PORT << 'EOF'
-          mkdir -p $SERVER_APP_PATH
+        ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }} -p ${{ secrets.SSH_PORT }} << 'EOF'
+          mkdir -p ${{ secrets.SERVER_APP_PATH }}
           exit
         EOF
-        scp -i private_key -r ./dist/* $SSH_USER@$SSH_IP:$SERVER_APP_PATH
+        scp -i private_key -r ./dist/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:${{ secrets.SERVER_APP_PATH }}
         rm private_key
