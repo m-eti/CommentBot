@@ -45,5 +45,5 @@ jobs:
           mkdir -p ${{ secrets.SERVER_APP_PATH }}
           exit
         EOF
-        scp -i private_key -r ./dist/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:${{ secrets.SERVER_APP_PATH }}
+        scp -i private_key -r . ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:${{ secrets.SERVER_APP_PATH }}
         rm private_key
