@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Session files from Telethon
+sessions/
+*.session
+
+# Log files
+*.log
+
+# Configuration file with secrets
+config.json
+
+# Virtual environment
+.venv/
+.vscode/
