@@ -8,6 +8,8 @@
         .header-container { display: flex; justify-content: space-between; align-items: center; }
         .header-container h1 { color: #333; margin: 0; }
         .header-container form { margin: 0; }
+        .error { color: #D8000C; background-color: #FFD2D2; border: 1px solid; margin: 10px 0px; padding:15px 10px 15px 10px; border-radius: 4px; }
+        .success { color: #4F8A10; background-color: #DFF2BF; border: 1px solid; margin: 10px 0px; padding:15px 10px 15px 10px; border-radius: 4px; }
         .section { margin-bottom: 20px; }
         input, button { padding: 8px; margin: 5px; }
         ul { list-style-type: none; }
@@ -21,6 +23,14 @@
             <button type="submit">Logout</button>
         </form>
     </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
     <div class="section">
         <h2>Add Account</h2>
@@ -51,6 +61,21 @@
             <button type="submit">Stop</button>
         </form>
         <p>Status: {{ "Running" if is_running else "Stopped" }}</p>
+    </div>
+    <div class="section">
+        <h2>Settings</h2>
+        <form action="/update_settings" method="post">
+            <label for="min_delay">Min Delay (s):</label>
+            <input type="number" id="min_delay" name="min_delay" value="{{ config.MIN_DELAY }}" required>
+            <br>
+            <label for="max_delay">Max Delay (s):</label>
+            <input type="number" id="max_delay" name="max_delay" value="{{ config.MAX_DELAY }}" required>
+            <br>
+            <label for="comment_chance">Comment Chance (%):</label>
+            <input type="number" id="comment_chance" name="comment_chance" min="0" max="100" value="{{ config.COMMENT_CHANCE }}" required>
+            <br>
+            <button type="submit">Update Settings</button>
+        </form>
     </div>
     <div class="section">
         <h2>Accounts</h2>

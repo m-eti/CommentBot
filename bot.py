@@ -40,7 +40,7 @@ def start_event_loop():
 
 
 async def send_code_request(phone, api_id, api_hash) -> Optional[str]:
-    client = TelegramClient(f'sessions/{phone}', api_id, api_hash)
+    client = TelegramClient(f'sessions/{phone}', api_id, api_hash, loop=_loop)
     await client.connect()
     try:
         phone_code = await client.send_code_request(phone)
@@ -52,7 +52,7 @@ async def send_code_request(phone, api_id, api_hash) -> Optional[str]:
 
 
 async def add_account(phone, code, phone_code_hash, api_id, api_hash, password=None) -> bool:
-    client = TelegramClient(f'sessions/{phone}', api_id, api_hash)
+    client = TelegramClient(f'sessions/{phone}', api_id, api_hash, loop=_loop)
     await client.connect()
     try:
         if not await client.is_user_authorized():
@@ -70,7 +70,10 @@ async def add_account(phone, code, phone_code_hash, api_id, api_hash, password=N
         await client.disconnect()
 
 
-async def start_commenting(phones: list, comments: list, api_id, api_hash):
+async def start_commenting(
+    phones: list, comments: list, api_id, api_hash,
+    min_delay: int, max_delay: int, comment_chance: int
+):
     global is_running
     await stop_all_clients()
 
@@ -80,6 +83,14 @@ async def start_commenting(phones: list, comments: list, api_id, api_hash):
             return
 
         if is_running:
+            if random.randint(1, 100) > comment_chance:
+                logger.info(f"Skipping comment in chat {event.chat.id} due to chance ({comment_chance}%).")
+                return
+
+            delay = random.uniform(min_delay, max_delay)
+            logger.info(f"Waiting for {delay:.2f} seconds before commenting.")
+            await asyncio.sleep(delay)
+
             comment = random.choice(comments)
             active_client = event.client
             try:

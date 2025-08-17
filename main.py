@@ -30,6 +30,9 @@ def load_config():
         "API_HASH": "",
         "accounts": {},
         "comments": [],
+        "MIN_DELAY": 1,
+        "MAX_DELAY": 5,
+        "COMMENT_CHANCE": 50,
     }
 
     needs_save = not os.path.exists(CONFIG_FILE)
@@ -98,9 +101,11 @@ def index():
     from bot import is_running
     return render_template(
         'index.html',
+        config=config,
         accounts=config["accounts"],
         comments=config["comments"],
-        logs=logs, is_running=is_running
+        logs=logs,
+        is_running=is_running
     )
 
 
@@ -183,6 +188,32 @@ def delete_comment():
     return redirect(url_for('index'))
 
 
+@app.route('/update_settings', methods=['POST'])
+def update_settings():
+    config = load_config()
+    try:
+        min_delay = int(request.form['min_delay'])
+        max_delay = int(request.form['max_delay'])
+        comment_chance = int(request.form['comment_chance'])
+
+        if not (0 <= comment_chance <= 100):
+            flash('Comment chance must be between 0 and 100.', 'error')
+            return redirect(url_for('index'))
+
+        if min_delay < 0 or min_delay > max_delay:
+            flash('Invalid delay range. Min delay must be non-negative and not greater than max delay.', 'error')
+            return redirect(url_for('index'))
+
+        config['MIN_DELAY'] = min_delay
+        config['MAX_DELAY'] = max_delay
+        config['COMMENT_CHANCE'] = comment_chance
+        save_config(config)
+        flash('Settings updated successfully.', 'success')
+    except (ValueError, KeyError):
+        flash('Invalid input for settings.', 'error')
+    return redirect(url_for('index'))
+
+
 @app.route('/start', methods=['POST'])
 def start():
     from bot import is_running
@@ -195,7 +226,14 @@ def start():
         if not phones:
             return "No signed-in accounts available to start."
         comments = config["comments"]
-        run_coroutine(start_commenting(phones, comments, config["API_ID"], config["API_HASH"]))
+        run_coroutine(start_commenting(
+            phones,
+            comments,
+            config["API_ID"],
+            config["API_HASH"],
+            config.get("MIN_DELAY", 1),
+            config.get("MAX_DELAY", 5),
+            config.get("COMMENT_CHANCE", 100)))
     return redirect(url_for('index'))
 
 
