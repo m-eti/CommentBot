@@ -39,14 +39,14 @@ jobs:
         pytest
     - name: Deploy to server
       run: |
-        mkdir dist
-        cp -r . dist/
-        rm dist/config.json
+        mkdir /dist
+        cp -r . /dist/
+        rm /dist/config.json
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
         chmod 600 private_key
         ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }} -p ${{ secrets.SSH_PORT }} << 'EOF'
           mkdir -p ${{ secrets.SERVER_APP_PATH }}
           exit
         EOF
-        scp -i private_key -P ${{ secrets.SSH_PORT }} -r dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:${{ secrets.SERVER_APP_PATH }}
+        scp -i private_key -P ${{ secrets.SSH_PORT }} -r /dist/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:${{ secrets.SERVER_APP_PATH }}
         rm private_key
